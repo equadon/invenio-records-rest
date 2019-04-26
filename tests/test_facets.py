@@ -19,8 +19,8 @@ from invenio_rest.errors import RESTValidationError
 from werkzeug.datastructures import MultiDict
 
 from invenio_records_rest.facets import _aggregations, _create_filter_dsl, \
-    _post_filter, _query_filter, default_facets_factory, range_filter, \
-    terms_filter
+    _post_filter, _query_filter, default_facets_factory, keyed_range_filter, \
+    range_filter, terms_filter
 
 
 def test_terms_filter():
@@ -42,6 +42,19 @@ def test_range_filter():
 
     assert pytest.raises(RESTValidationError, f, ['2016'])
     assert pytest.raises(RESTValidationError, f, ['--'])
+
+
+def test_keyed_range_filter():
+    """Test keyed range filter."""
+    range_query = {
+        "None": {"lt": 1},
+        "1+": {"gte": 1}
+    }
+    rfilter = keyed_range_filter("field", range_query)
+
+    assert rfilter(["None"]) == Range(field={"lt": 1})
+    assert rfilter(["1+"]) == Range(field={"gte": 1})
+    assert rfilter(["None", "1+"]) == Range(field={"gte": 1, "lt": 1})
 
 
 def test_create_filter_dsl():

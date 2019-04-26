@@ -79,6 +79,27 @@ def range_filter(field, start_date_math=None, end_date_math=None, **kwargs):
     return inner
 
 
+def keyed_range_filter(field, range_query, **kwargs):
+    """Create a keyed range filter.
+
+    :param field: Field name.
+    :param range_query: Dictionary with keys and their range options.
+    :param kwargs: Additional arguments passed to the Range query.
+    """
+    def inner(values):
+        args = {}
+        for range_key, mappings in range_query.items():
+            if range_key in values:
+                for key, value in mappings.items():
+                    args[key] = value
+
+        args.update(kwargs.copy())
+
+        return Range(**{field: args})
+
+    return inner
+
+
 def _create_filter_dsl(urlkwargs, definitions):
     """Create a filter DSL expression."""
     filters = []
